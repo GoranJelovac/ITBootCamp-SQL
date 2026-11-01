@@ -1,22 +1,23 @@
-# Part_a
-
-### 1. Колико утакмица је одиграно у фебруару 2025?
-
-```sql
+-- 1. Koliko utakmica je odigrano u februaru 2025?
 SELECT
     COUNT(match_id) AS total_matches
 FROM itbootcamp.northern_star.matches
 WHERE status = 'played'
     AND kickoff_ts >= '2025-02-01'
     AND kickoff_ts < '2025-03-01';
-```
-- 40 
+-- 40 
 
----
+-- 2. Koji stadion ima najveći kapacitet, a koji je najveći stadion nekog kluba?
+-- 2.1 Svi stadioni
+SELECT 
+    stadium_name,
+    capacity
+FROM itbootcamp.northern_star.stadiums
+ORDER BY capacity DESC;
+-- stadium_name         capacity    team_name
+-- National Stadium     80000       /
 
-### 2. Који стадион има највећи капацитет, а који је највећи стадион неког клуба?
-
-```sql
+-- 2.2 Stadion kluba
 SELECT 
     s.stadium_name,
     s.capacity,
@@ -25,46 +26,29 @@ FROM itbootcamp.northern_star.stadiums AS s
 JOIN itbootcamp.northern_star.teams AS t
     ON s.stadium_id = t.stadium_id
 ORDER BY s.capacity DESC;
-```
-- stadium_name         capacity    team_name
-- Harbourside Park     52000       Northport United
+-- stadium_name         capacity    team_name
+-- Harbourside Park     52000       Northport United
 
----
-
-### 3. Колико играча у лиги има српско држављанство (nationality = 'Serbia')?
-
-```sql
+-- 3. Koliko igrača u ligi ima srpsko državljanstvo (nationality = 'Serbia')?
 SELECT DISTINCT nationality FROM itbootcamp.northern_star.players;
-```
-```sql
+
 SELECT
     COUNT(player_id) AS total_players
 FROM itbootcamp.northern_star.players
 WHERE nationality = 'Serbia';
-```
-- 42
+-- 42
 
----
-
-### 4. Колико утакмица је завршено резултатом 1:1?
-
-```sql
+-- 4. Koliko utakmica je završeno rezultatom 1:1?
 SELECT
     COUNT(match_id) AS total_matches
 FROM itbootcamp.northern_star.matches
 WHERE home_goals = 1 
     AND away_goals = 1;
-```
-- 94
+-- 94
 
----
-
-### 5. Колика је просечна посета по сезони?
-
-```sql
+-- 5. Kolika je prosečna poseta po sezoni?
 SELECT * FROM itbootcamp.northern_star.matches;
-```
-```sql
+
 SELECT
     season,
     ROUND(AVG(attendance), 2) AS avg_attendance
@@ -72,19 +56,13 @@ FROM itbootcamp.northern_star.matches
 WHERE status = 'played'
 GROUP BY season
 ORDER BY season;
-```
-- season       avg_attendance
-- 2023/24      24276.2
-- 2024/25      24199.49
+-- season       avg_attendance
+-- 2023/24      24276.2
+-- 2024/25      24199.49
 
----
-
-### 6. Колико голова је дато из пенала по сезони?
-
-```sql
+-- 6. Koliko golova je dato iz penala po sezoni?
 SELECT DISTINCT event_type FROM itbootcamp.northern_star.match_events;
-```
-```sql
+
 SELECT
     m.season,
     COUNT(me.event_id) AS penalty_goal
@@ -95,16 +73,11 @@ WHERE me.event_type = 'penalty_goal'
     AND m.status = 'played'
 GROUP BY m.season
 ORDER BY m.season;
-```
-- season       penalty_goal
-- 2023/24      104
-- 2024/25      109
+-- season       penalty_goal
+-- 2023/24      104
+-- 2024/25      109
 
----
-
-### 7. Колико различитих играча је дало бар један гол у сезони 2024/25?
-
-```sql
+-- 7. Koliko različitih igrača je dalo bar jedan gol u sezoni 2024/25?
 SELECT
     COUNT(DISTINCT me.player_id) AS total_players
 FROM itbootcamp.northern_star.match_events AS me
@@ -113,18 +86,11 @@ JOIN itbootcamp.northern_star.matches AS m
 WHERE m.season = '2024/25'
     AND m.status = 'played'
     AND me.event_type IN ('goal', 'penalty_goal');
-    
-```
-- 308 
+-- 308 
 
----
-
-### 8. Који судија је највише пута судио утакмице клуба Northport United?
-
-```sql
+-- 8. Koji sudija je najviše puta sudio utakmice kluba Northport United?
 SELECT team_name FROM itbootcamp.northern_star.teams;
-```
-```sql
+
 SELECT
     r.referee_name,
     COUNT(m.match_id) AS total_matches
@@ -138,18 +104,12 @@ WHERE t.team_name = 'Northport United'
     AND m.status = 'played'
 GROUP BY r.referee_id, r.referee_name
 ORDER BY total_matches DESC;
-```
-- Sudija => Peter Lindgren
-- 9 meceva
+-- Sudija => Peter Lindgren
+-- 9 meceva
 
----
-
-### 9. Који судија је у сезони 2024/25 имао највећи удео утакмица у којима је досуђен бар један пенал, дат или промашен?
-
-```sql
+-- 9. Koji sudija je u sezoni 2024/25 imao najveći udeo utakmica u kojima je dosuđen bar jedan penal, dat ili promašen?
 SELECT DISTINCT event_type FROM itbootcamp.northern_star.match_events;
-```
-```sql
+
 WITH penalty_matches AS (
     SELECT DISTINCT
         match_id
@@ -170,15 +130,10 @@ WHERE m.season = '2024/25'
     AND m.status = 'played'
 GROUP BY r.referee_id, r.referee_name
 ORDER BY penalty_pct DESC;
-```
-- referee_name     total_matches       penalty_matches     penalty_pct
-- Peter Lindgren    20                  9                   45
+-- referee_name     total_matches       penalty_matches     penalty_pct
+-- Peter Lindgren    20                  9                   45
 
----
-
-### 10. Који тренер је освојио највише бодова у утакмицама у којима је његов тим губио на полувремену? Рачунајте и домаће и гостујуће утакмице.
-
-```sql
+-- 10. Koji trener je osvojio najviše bodova u utakmicama u kojima je njegov tim gubio na poluvremenu? Računajte i domaće i gostujuće utakmice.
 WITH teams_losing_ht AS (
     SELECT
         match_id,
@@ -207,7 +162,7 @@ SELECT
     SUM(
         CASE
             WHEN tlh.goals_for > tlh.goals_against THEN 3
-            WHEN tlh.goals_for = tlh.goals_against THEN 0
+            WHEN tlh.goals_for = tlh.goals_against THEN 1
             ELSE 0
         END
     ) AS total_points
@@ -218,6 +173,5 @@ JOIN itbootcamp.northern_star.manager_spells AS ms
             AND COALESCE(ms.end_date, DATE'9999-12-31')
 GROUP BY ms.manager_name
 ORDER BY total_points DESC;
-```
-- Zoran Tosic
-- 12 poena
+-- Zoran Tosic
+-- 18 poena
